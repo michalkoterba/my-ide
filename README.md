@@ -179,15 +179,20 @@ docker compose up -d --build
 - Dockerfile is optimized for ARM64 (Oracle Cloud ARM instances)
 - Uses Ubuntu 24.04 base image with ARM64 binaries
 - Neovim ARM64 binary downloaded from official releases
-- Python packages installed via uv (installed via pip3)
+- Python packages installed via uv (installed via pipx)
 
 ### Docker Compose
 - Uses Docker Compose v2 syntax (no `version:` attribute)
 - If using older Docker Compose v1, add `version: '3.8'` at the top of `docker-compose.yml`
 
 ### uv Installation
-- uv is installed via `pip3 install uv` for reliable PATH availability
-- Previous curl installer issues resolved
+- uv is installed via pipx (Ubuntu 24.04 blocks system pip installs)
+- pipx ensures proper isolation while making uv available system-wide
+- Python externally-managed-environment restriction removed for container
+
+### Python Package Installation
+- Python LSP tools (ruff, debugpy, etc.) installed via `uv pip install --system --break-system-packages`
+- This bypasses Ubuntu's protected Python environment for containers
 
 ### Building on x86_64
 To build ARM64 image on x86_64 host, use Docker Buildx:
@@ -206,6 +211,9 @@ sudo chown -R $USER:$USER ./workspace ./config
 ```
 
 
+
+#### "externally-managed-environment" error when installing Python packages
+This occurs because Ubuntu 24.04 protects system Python. The Dockerfile removes the restriction file and uses pipx/uv with --break-system-packages. If you encounter this error elsewhere, ensure you're using the correct installation method.
 
 #### LSP servers not installing
 1. Enter container: `docker exec -it ide-devbox bash`

@@ -6,6 +6,11 @@ if [ -d "/home/devuser/.cargo/bin" ]; then
     export PATH="/home/devuser/.cargo/bin:${PATH}"
 fi
 
+# Add user's local bin to PATH (for pipx and other user-installed tools)
+if [ -d "/home/devuser/.local/bin" ]; then
+    export PATH="/home/devuser/.local/bin:${PATH}"
+fi
+
 # Set up Neovim configuration if not present
 NVIM_CONFIG_DIR="/home/devuser/.config/nvim"
 KICKSTART_SOURCE="/tmp/kickstart.nvim"

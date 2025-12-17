@@ -19,6 +19,9 @@ RUN apt-get update && apt-get install -y \
     sudo \
     && rm -rf /var/lib/apt/lists/*
 
+# Remove Python externally-managed-environment restriction (container-only)
+RUN rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED
+
 # 2. Install Node.js 20 (required for Claude Code, LSP servers, OpenCode)
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs
@@ -32,14 +35,17 @@ RUN wget https://github.com/neovim/neovim/releases/download/stable/nvim-linux-ar
     rm nvim-linux-arm64.tar.gz
 
 # 4. Install uv (modern Python package manager)
-# Install via pip for reliable availability in PATH
-RUN pip3 install uv
+# Install pipx first, then uv via pipx (Ubuntu 24.04 requires this for system-wide Python apps)
+RUN apt-get update && apt-get install -y pipx && \
+    pipx ensurepath && \
+    pipx install --global uv && \
+    rm -rf /var/lib/apt/lists/*
 
 # 5. Install Python LSP tools
 # pyright via npm (official Microsoft Python language server)
 # ruff, debugpy, mypy via uv pip (fast package manager)
 RUN npm install -g pyright && \
-    uv pip install ruff debugpy mypy black isort
+    uv pip install --system --break-system-packages ruff debugpy mypy black isort
 
 # 6. Install Claude Code (Anthropic's coding assistant)
 RUN npm install -g @anthropic-ai/claude-code
