@@ -11,6 +11,10 @@ if [ -d "/home/devuser/.local/bin" ]; then
     export PATH="/home/devuser/.local/bin:${PATH}"
 fi
 
+# Ensure .config directory exists and has correct ownership
+sudo mkdir -p /home/devuser/.config
+sudo chown -R devuser:devuser /home/devuser/.config 2>/dev/null || true
+
 # Set up Neovim configuration if not present
 NVIM_CONFIG_DIR="/home/devuser/.config/nvim"
 KICKSTART_SOURCE="/tmp/kickstart.nvim"
@@ -18,17 +22,17 @@ KICKSTART_SOURCE="/tmp/kickstart.nvim"
 if [ ! -f "${NVIM_CONFIG_DIR}/init.lua" ]; then
     echo "Setting up Neovim configuration from kickstart.nvim..."
     
-    # Create config directory
-    mkdir -p "${NVIM_CONFIG_DIR}"
+    # Create config directory (with sudo for mounted volumes)
+    sudo mkdir -p "${NVIM_CONFIG_DIR}"
     
-    # Copy kickstart.nvim files
-    cp -r "${KICKSTART_SOURCE}"/* "${NVIM_CONFIG_DIR}"/
+    # Copy kickstart.nvim files (with sudo for mounted volumes)
+    sudo cp -r "${KICKSTART_SOURCE}"/* "${NVIM_CONFIG_DIR}"/
     
     # Create lua/custom directory for user extensions
-    mkdir -p "${NVIM_CONFIG_DIR}/lua/custom"
+    sudo mkdir -p "${NVIM_CONFIG_DIR}/lua/custom"
     
-    # Create custom Python LSP configuration
-    cat > "${NVIM_CONFIG_DIR}/lua/custom/python.lua" << 'EOF'
+    # Create custom Python LSP configuration (with sudo tee)
+    sudo tee "${NVIM_CONFIG_DIR}/lua/custom/python.lua" > /dev/null << 'EOF'
 -- Python LSP configuration for Docker IDE
 return {
   {
@@ -74,11 +78,11 @@ return {
 EOF
     
     # Uncomment the custom plugins import in init.lua
-    sed -i "s/-- { import = 'custom.plugins' }/{ import = 'custom.plugins' }/" "${NVIM_CONFIG_DIR}/init.lua"
+    sudo sed -i "s/-- { import = 'custom.plugins' }/{ import = 'custom.plugins' }/" "${NVIM_CONFIG_DIR}/init.lua"
     
     # Create custom/plugins/init.lua to load our python config
-    mkdir -p "${NVIM_CONFIG_DIR}/lua/custom/plugins"
-    cat > "${NVIM_CONFIG_DIR}/lua/custom/plugins/init.lua" << 'EOF'
+    sudo mkdir -p "${NVIM_CONFIG_DIR}/lua/custom/plugins"
+    sudo tee "${NVIM_CONFIG_DIR}/lua/custom/plugins/init.lua" > /dev/null << 'EOF'
 return {
   require("custom.python"),
 }

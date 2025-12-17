@@ -205,10 +205,31 @@ docker buildx build --platform linux/arm64 -t my-ide .
 ### Common Issues
 
 #### "Permission denied" on mounted volumes
-```bash
-# Fix permissions on host
-sudo chown -R $USER:$USER ./workspace ./config
-```
+
+The container runs as non-root user `devuser` with passwordless sudo. Mounted volumes (workspace, config/nvim) may have incorrect permissions.
+
+**Symptoms**: Entrypoint logs show "Permission denied" when copying Neovim config files.
+
+**Solutions**:
+
+1. **Fix host permissions** (recommended):
+   ```bash
+   sudo chown -R $USER:$USER ./workspace ./config
+   ```
+
+2. **Let container fix permissions** (entrypoint uses sudo):
+   - The entrypoint script uses `sudo` to create/copy files
+   - If host directory is owned by root, `devuser` can still write via sudo
+   - Files will be owned by root initially, then chowned to `devuser`
+
+3. **If issues persist**:
+   ```bash
+   # Remove existing volumes and rebuild
+   docker compose down -v
+   docker compose up -d --build
+   ```
+
+**Note**: The `devuser` has passwordless sudo for container maintenance. This is safe in a container environment.
 
 
 
