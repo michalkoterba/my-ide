@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # Development environment
+  devbox:
+    build: .
+    container_name: ide-devbox
+    # Uses default bridge network (no Tailscale sidecar)
+    # Network access through host's Tailscale installation
+    volumes:
+      # Workspace directory for projects
+      - ./workspace:/home/devuser/workspace
+      # Neovim configuration (persists across container restarts)
+      - ./config/nvim:/home/devuser/.config/nvim
+      # Claude Code authentication tokens
+      - ~/.anthropic:/home/devuser/.anthropic
+      # OpenCode configuration and cache
+      - ~/.opencode:/home/devuser/.opencode
+      # Optional: SSH keys for git (read-only)
+      # - ~/.ssh:/home/devuser/.ssh:ro
+      # Optional: Git configuration
+      # - ~/.gitconfig:/home/devuser/.gitconfig:ro
+    environment:
+      # Terminal settings
+      - TERM=xterm-256color
+      # Optional AI service credentials (can also use mounted volumes)
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENCODE_API_KEY=${OPENCODE_API_KEY:-}
+      # User info for git (optional)
+      - GIT_AUTHOR_NAME=${GIT_AUTHOR_NAME:-Dev User}
+      - GIT_AUTHOR_EMAIL=${GIT_AUTHOR_EMAIL:-dev@localhost}
+    restart: unless-stopped

@@ -1,0 +1,37 @@
+# Docker and environment
+.env
+.env.local
+.env.*.local
+!.env.template
+
+# Docker volumes
+workspace/*           # Project files (users should manage separately)
+!workspace/.keep
+
+# Neovim config (user's personal config)
+config/nvim/*         # User's Neovim configuration
+!config/nvim/.keep
+
+# Container data
+# (No Tailscale volume - Tailscale installed on host if needed)
+
+# Build artifacts
+*.tar.gz
+*.zip
+
+# Editor and IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
