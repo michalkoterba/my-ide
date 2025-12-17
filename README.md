@@ -271,6 +271,8 @@ If you see errors like "module 'nvim-treesitter.configs' not found":
    - Network connectivity (GitHub access for cloning repos)
    - Disk space for plugin installation
    - Permission issues in plugin directory (fixed in entrypoint)
+   - **Kickstart.nvim source not found**: If you see errors about missing init.lua, rebuild the container to restore `/opt/kickstart.nvim`
+   - **Plugin auto-install timeout**: Entrypoint attempts auto-install with 10-minute timeout; manually run `nvim --headless -c 'Lazy sync' -c 'qa'` if it fails
 
 #### OpenCode/Claude Code authentication issues
 1. Ensure host directories exist: `mkdir -p ~/.anthropic ~/.opencode`

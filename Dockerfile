@@ -58,7 +58,8 @@ RUN wget https://github.com/gitpod-io/openvscode-server/releases/download/openvs
     rm openvscode-server-v1.96.0-linux-arm64.tar.gz
 
 # 9. Clone kickstart.nvim for initial Neovim configuration
-RUN git clone https://github.com/nvim-lua/kickstart.nvim /tmp/kickstart.nvim
+RUN git clone https://github.com/nvim-lua/kickstart.nvim /tmp/kickstart.nvim && \
+    mv /tmp/kickstart.nvim /opt/kickstart.nvim
 
 # 10. Create non-root user with passwordless sudo
 RUN useradd -m -s /bin/bash devuser && \
