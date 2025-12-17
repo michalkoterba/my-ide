@@ -11,9 +11,16 @@ if [ -d "/home/devuser/.local/bin" ]; then
     export PATH="/home/devuser/.local/bin:${PATH}"
 fi
 
-# Ensure .config directory exists and has correct ownership
+# Ensure Neovim directories exist with correct ownership
 sudo mkdir -p /home/devuser/.config
+sudo mkdir -p /home/devuser/.local/share/nvim
+sudo mkdir -p /home/devuser/.local/state/nvim
+sudo mkdir -p /home/devuser/.cache/nvim
+
+# Fix ownership for Neovim directories
 sudo chown -R devuser:devuser /home/devuser/.config 2>/dev/null || true
+sudo chown -R devuser:devuser /home/devuser/.local 2>/dev/null || true
+sudo chown -R devuser:devuser /home/devuser/.cache 2>/dev/null || true
 
 # Set up Neovim configuration if not present
 NVIM_CONFIG_DIR="/home/devuser/.config/nvim"
@@ -103,13 +110,29 @@ if [ -d "${NVIM_CONFIG_DIR}" ]; then
     sudo chown -R devuser:devuser "${NVIM_CONFIG_DIR}" 2>/dev/null || true
 fi
 
+# Check if key plugins are installed
+LAZY_PLUGIN_DIR="/home/devuser/.local/share/nvim/lazy"
+if [ -d "${LAZY_PLUGIN_DIR}/nvim-treesitter" ]; then
+    echo "✓ Neovim plugins appear to be installed"
+else
+    echo "⚠  Neovim plugins not yet installed"
+    echo "   Run 'nvim' to trigger auto-installation, or run ':Lazy sync' inside Neovim"
+fi
+
 echo "Docker IDE environment ready"
+echo ""
 echo "Tools available:"
 echo "  nvim         - Neovim with kickstart.nvim configuration"
 echo "  opencode     - AI coding agent (run 'opencode' to start)"
 echo "  claude-code  - Anthropic's coding assistant"
 echo "  uv           - Modern Python package manager"
 echo "  python3.12   - Python interpreter"
+echo ""
+echo "First time Neovim setup:"
+echo "  1. Run 'nvim' to start Neovim"
+echo "  2. Plugins will auto-install via Lazy.nvim (may take a few minutes)"
+echo "  3. If plugins don't install automatically, run ':Lazy sync'"
+echo "  4. Python LSP servers will install via Mason (check with ':Mason')"
 
 # Execute the passed command
 exec "$@"

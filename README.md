@@ -242,6 +242,36 @@ This occurs because Ubuntu 24.04 protects system Python. The Dockerfile removes 
 3. Check Mason: `:Mason`
 4. Install manually: `:MasonInstall pyright ruff debugpy`
 
+#### Neovim plugin installation issues (nvim-treesitter errors)
+
+If you see errors like "module 'nvim-treesitter.configs' not found":
+
+1. **Plugins may not be installed yet**: 
+   - First time running Neovim triggers auto-install via Lazy.nvim
+   - This can take several minutes depending on network speed
+
+2. **Manual plugin installation**:
+   ```bash
+   docker exec -it ide-devbox bash
+   nvim --headless -c 'Lazy sync' -c 'qa'
+   ```
+   This runs plugin installation in headless mode.
+
+3. **Check plugin installation status**:
+   ```bash
+   docker exec -it ide-devbox ls -la /home/devuser/.local/share/nvim/lazy/
+   ```
+   Should show directories for nvim-treesitter, nvim-lspconfig, etc.
+
+4. **Check logs for errors**:
+   - In Neovim: `:Lazy log` to see plugin manager logs
+   - `:messages` to see recent error messages
+
+5. **Common issues**:
+   - Network connectivity (GitHub access for cloning repos)
+   - Disk space for plugin installation
+   - Permission issues in plugin directory (fixed in entrypoint)
+
 #### OpenCode/Claude Code authentication issues
 1. Ensure host directories exist: `mkdir -p ~/.anthropic ~/.opencode`
 2. Check write permissions on host directories
