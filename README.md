@@ -33,6 +33,8 @@ docker compose up -d --build
 
 # Check container status
 docker compose ps
+
+**Note**: When cloning this repository, always use `--build` flag or explicitly run `docker compose build` before starting. This ensures the latest fixes (including the nvim-treesitter module name fix) are incorporated into the Docker image.
 ```
 
 ### 3. Access the Development Environment
@@ -158,6 +160,14 @@ docker compose pull
 docker compose up -d --build
 ```
 
+### After Git Updates
+When pulling new changes from git (e.g., after `git pull`), rebuild the Docker image to incorporate any fixes:
+```bash
+docker compose down
+docker compose build
+docker compose up -d
+```
+
 ### Resetting Environment
 ```bash
 # Remove containers and volumes (preserves workspace/config)
@@ -246,34 +256,41 @@ This occurs because Ubuntu 24.04 protects system Python. The Dockerfile removes 
 
 If you see errors like "module 'nvim-treesitter.configs' not found":
 
-1. **Plugins may not be installed yet**: 
+1. **Ensure Docker image is rebuilt after cloning**:
+   ```bash
+   docker compose down
+   docker compose build
+   docker compose up -d
+   ```
+   The fix for the `configs` vs `config` module name mismatch is in the repository, but the Docker image must be rebuilt to incorporate the updated entrypoint.
+
+2. **Plugins may not be installed yet**: 
    - First time running Neovim triggers auto-install via Lazy.nvim
    - This can take several minutes depending on network speed
+   - The entrypoint script automatically installs plugins on container start
 
-2. **Manual plugin installation**:
+3. **Manual plugin installation**:
    ```bash
    docker exec -it ide-devbox bash
    nvim --headless -c 'Lazy sync' -c 'qa'
    ```
    This runs plugin installation in headless mode.
 
-3. **Check plugin installation status**:
+4. **Check plugin installation status**:
    ```bash
    docker exec -it ide-devbox ls -la /home/devuser/.local/share/nvim/lazy/
    ```
    Should show directories for nvim-treesitter, nvim-lspconfig, etc.
 
-4. **Check logs for errors**:
+5. **Check logs for errors**:
    - In Neovim: `:Lazy log` to see plugin manager logs
    - `:messages` to see recent error messages
+   - Container logs: `docker compose logs`
 
-5. **Debugging nvim-treesitter "module not found" errors**:
+6. **Debugging nvim-treesitter issues**:
    ```bash
    # Check if plugin directory exists
    docker exec -it ide-devbox ls -la /home/devuser/.local/share/nvim/lazy/nvim-treesitter/
-   
-   # Check if configs.lua exists
-   docker exec -it ide-devbox find /home/devuser/.local/share/nvim/lazy/nvim-treesitter -name "configs.lua"
    
    # Check plugin structure
    docker exec -it ide-devbox find /home/devuser/.local/share/nvim/lazy/nvim-treesitter -name "*.lua" | head -20
@@ -281,20 +298,14 @@ If you see errors like "module 'nvim-treesitter.configs' not found":
    # Check installation log
    docker exec -it ide-devbox cat /home/devuser/.cache/nvim/log/plugin-install.log 2>/dev/null || echo "No log found"
    ```
-   
-   If `configs.lua` is missing, the plugin installation may be incomplete. Try:
-   ```bash
-   docker exec -it ide-devbox rm -rf /home/devuser/.local/share/nvim/lazy/nvim-treesitter
-   docker exec -it ide-devbox nvim --headless -c 'Lazy install nvim-treesitter' -c 'qa'
-   ```
 
-6. **Common issues**:
-   - Network connectivity (GitHub access for cloning repos)
-   - Disk space for plugin installation
-   - Permission issues in plugin directory (fixed in entrypoint)
-   - **Kickstart.nvim source not found**: If you see errors about missing init.lua, rebuild the container to restore `/opt/kickstart.nvim`
-   - **Plugin auto-install timeout**: Entrypoint attempts auto-install with 10-minute timeout; manually run `nvim --headless -c 'Lazy sync' -c 'qa'` if it fails
-   - **Concurrent plugin loading**: Plugins may try to load before builds complete; entrypoint now separates install and sync phases
+7. **Common issues**:
+   - **Docker image not rebuilt**: After cloning, the Docker image contains outdated entrypoint scripts
+   - **Network connectivity**: GitHub access for cloning repos
+   - **Disk space**: For plugin installation
+   - **Permission issues**: Fixed in entrypoint
+   - **Plugin auto-install timeout**: Entrypoint attempts auto-install with 10-minute timeout
+   - **Concurrent plugin loading**: Plugins may try to load before builds complete
 
 #### OpenCode/Claude Code authentication issues
 1. Ensure host directories exist: `mkdir -p ~/.anthropic ~/.opencode`

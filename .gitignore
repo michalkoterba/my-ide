@@ -8,9 +8,9 @@
 workspace/*           # Project files (users should manage separately)
 !workspace/.keep
 
-# Neovim config (user's personal config)
-config/nvim/*         # User's Neovim configuration
-!config/nvim/.keep
+# Neovim config (pre-configured as part of project)
+# config/nvim/*         # User's Neovim configuration - now tracked in repo
+# !config/nvim/.keep
 
 # Container data
 # (No Tailscale volume - Tailscale installed on host if needed)
@@ -31,6 +31,7 @@ Thumbs.db
 # Logs
 *.log
 logs/
+session-ses_*.md
 
 # Temporary files
 tmp/

@@ -170,7 +170,7 @@ else
             if timeout 600 nvim --headless -c 'Lazy sync' -c 'qa' 2>&1 | tee -a "${PLUGIN_LOG}"; then
                 if [ -d "${LAZY_PLUGIN_DIR}/nvim-treesitter" ]; then
                     # Check if the plugin has the necessary files
-                    if [ -f "${LAZY_PLUGIN_DIR}/nvim-treesitter/lua/nvim-treesitter/configs.lua" ]; then
+                     if [ -f "${LAZY_PLUGIN_DIR}/nvim-treesitter/lua/nvim-treesitter/config.lua" ]; then
                         echo "✓ Neovim plugins successfully installed and built" | tee -a "${PLUGIN_LOG}"
                         echo "   Installed plugins:" | tee -a "${PLUGIN_LOG}"
                         ls -la "${LAZY_PLUGIN_DIR}/" | tee -a "${PLUGIN_LOG}"
@@ -179,14 +179,14 @@ else
                         
                         # Test if nvim-treesitter can be loaded
                         echo "   Testing nvim-treesitter module loading..." | tee -a "${PLUGIN_LOG}"
-                        if timeout 30 nvim --headless -c 'lua print("Testing nvim-treesitter...") require("nvim-treesitter.configs").setup({}) print("SUCCESS: nvim-treesitter loaded")' -c 'qa' 2>&1 | tee -a "${PLUGIN_LOG}"; then
+                         if timeout 30 nvim --headless -c 'lua print("Testing nvim-treesitter...") require("nvim-treesitter.config").setup({}) print("SUCCESS: nvim-treesitter loaded")' -c 'qa' 2>&1 | tee -a "${PLUGIN_LOG}"; then
                             echo "✓ nvim-treesitter module loads successfully" | tee -a "${PLUGIN_LOG}"
                         else
                             echo "⚠  nvim-treesitter module failed to load" | tee -a "${PLUGIN_LOG}"
                             echo "   This may cause errors when starting Neovim" | tee -a "${PLUGIN_LOG}"
                         fi
                     else
-                        echo "⚠  nvim-treesitter installed but missing configs.lua" | tee -a "${PLUGIN_LOG}"
+                        echo "⚠  nvim-treesitter installed but missing config.lua" | tee -a "${PLUGIN_LOG}"
                         echo "   Plugin directory contents:" | tee -a "${PLUGIN_LOG}"
                         ls -la "${LAZY_PLUGIN_DIR}/nvim-treesitter/" | tee -a "${PLUGIN_LOG}"
                         echo "   Run 'nvim' to trigger manual installation, or run ':Lazy sync' inside Neovim"
