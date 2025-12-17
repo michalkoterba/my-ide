@@ -267,12 +267,34 @@ If you see errors like "module 'nvim-treesitter.configs' not found":
    - In Neovim: `:Lazy log` to see plugin manager logs
    - `:messages` to see recent error messages
 
-5. **Common issues**:
+5. **Debugging nvim-treesitter "module not found" errors**:
+   ```bash
+   # Check if plugin directory exists
+   docker exec -it ide-devbox ls -la /home/devuser/.local/share/nvim/lazy/nvim-treesitter/
+   
+   # Check if configs.lua exists
+   docker exec -it ide-devbox find /home/devuser/.local/share/nvim/lazy/nvim-treesitter -name "configs.lua"
+   
+   # Check plugin structure
+   docker exec -it ide-devbox find /home/devuser/.local/share/nvim/lazy/nvim-treesitter -name "*.lua" | head -20
+   
+   # Check installation log
+   docker exec -it ide-devbox cat /home/devuser/.cache/nvim/log/plugin-install.log 2>/dev/null || echo "No log found"
+   ```
+   
+   If `configs.lua` is missing, the plugin installation may be incomplete. Try:
+   ```bash
+   docker exec -it ide-devbox rm -rf /home/devuser/.local/share/nvim/lazy/nvim-treesitter
+   docker exec -it ide-devbox nvim --headless -c 'Lazy install nvim-treesitter' -c 'qa'
+   ```
+
+6. **Common issues**:
    - Network connectivity (GitHub access for cloning repos)
    - Disk space for plugin installation
    - Permission issues in plugin directory (fixed in entrypoint)
    - **Kickstart.nvim source not found**: If you see errors about missing init.lua, rebuild the container to restore `/opt/kickstart.nvim`
    - **Plugin auto-install timeout**: Entrypoint attempts auto-install with 10-minute timeout; manually run `nvim --headless -c 'Lazy sync' -c 'qa'` if it fails
+   - **Concurrent plugin loading**: Plugins may try to load before builds complete; entrypoint now separates install and sync phases
 
 #### OpenCode/Claude Code authentication issues
 1. Ensure host directories exist: `mkdir -p ~/.anthropic ~/.opencode`

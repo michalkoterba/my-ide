@@ -160,20 +160,50 @@ else
         # Try to install plugins in headless mode with timeout
         echo "   Starting plugin installation..." | tee -a "${PLUGIN_LOG}"
         
-        if timeout 600 nvim --headless -c 'Lazy sync' -c 'qa' 2>&1 | tee -a "${PLUGIN_LOG}"; then
-            if [ -d "${LAZY_PLUGIN_DIR}/nvim-treesitter" ]; then
-                echo "✓ Neovim plugins successfully installed" | tee -a "${PLUGIN_LOG}"
-                echo "   Installed plugins:" | tee -a "${PLUGIN_LOG}"
-                ls -la "${LAZY_PLUGIN_DIR}/" | tee -a "${PLUGIN_LOG}"
+        # First install plugins without loading config
+        echo "   Step 1: Installing plugins (no config loading)..." | tee -a "${PLUGIN_LOG}"
+        if timeout 300 nvim --headless -c 'Lazy install' -c 'qa' 2>&1 | tee -a "${PLUGIN_LOG}"; then
+            echo "   Step 1 complete: Plugins downloaded" | tee -a "${PLUGIN_LOG}"
+            
+            # Then sync to build and load (with longer timeout for builds)
+            echo "   Step 2: Building plugins and loading config..." | tee -a "${PLUGIN_LOG}"
+            if timeout 600 nvim --headless -c 'Lazy sync' -c 'qa' 2>&1 | tee -a "${PLUGIN_LOG}"; then
+                if [ -d "${LAZY_PLUGIN_DIR}/nvim-treesitter" ]; then
+                    # Check if the plugin has the necessary files
+                    if [ -f "${LAZY_PLUGIN_DIR}/nvim-treesitter/lua/nvim-treesitter/configs.lua" ]; then
+                        echo "✓ Neovim plugins successfully installed and built" | tee -a "${PLUGIN_LOG}"
+                        echo "   Installed plugins:" | tee -a "${PLUGIN_LOG}"
+                        ls -la "${LAZY_PLUGIN_DIR}/" | tee -a "${PLUGIN_LOG}"
+                        echo "   nvim-treesitter structure:" | tee -a "${PLUGIN_LOG}"
+                        find "${LAZY_PLUGIN_DIR}/nvim-treesitter" -name "*.lua" -type f | head -10 | tee -a "${PLUGIN_LOG}"
+                        
+                        # Test if nvim-treesitter can be loaded
+                        echo "   Testing nvim-treesitter module loading..." | tee -a "${PLUGIN_LOG}"
+                        if timeout 30 nvim --headless -c 'lua print("Testing nvim-treesitter...") require("nvim-treesitter.configs").setup({}) print("SUCCESS: nvim-treesitter loaded")' -c 'qa' 2>&1 | tee -a "${PLUGIN_LOG}"; then
+                            echo "✓ nvim-treesitter module loads successfully" | tee -a "${PLUGIN_LOG}"
+                        else
+                            echo "⚠  nvim-treesitter module failed to load" | tee -a "${PLUGIN_LOG}"
+                            echo "   This may cause errors when starting Neovim" | tee -a "${PLUGIN_LOG}"
+                        fi
+                    else
+                        echo "⚠  nvim-treesitter installed but missing configs.lua" | tee -a "${PLUGIN_LOG}"
+                        echo "   Plugin directory contents:" | tee -a "${PLUGIN_LOG}"
+                        ls -la "${LAZY_PLUGIN_DIR}/nvim-treesitter/" | tee -a "${PLUGIN_LOG}"
+                        echo "   Run 'nvim' to trigger manual installation, or run ':Lazy sync' inside Neovim"
+                    fi
+                else
+                    echo "⚠  Plugin installation may have failed - nvim-treesitter not found" | tee -a "${PLUGIN_LOG}"
+                    echo "   Check ${PLUGIN_LOG} for errors" | tee -a "${PLUGIN_LOG}"
+                    echo "   Run 'nvim' to trigger manual installation, or run ':Lazy sync' inside Neovim"
+                fi
             else
-                echo "⚠  Plugin installation may have failed - nvim-treesitter not found" | tee -a "${PLUGIN_LOG}"
-                echo "   Check ${PLUGIN_LOG} for errors" | tee -a "${PLUGIN_LOG}"
-                echo "   Run 'nvim' to trigger manual installation, or run ':Lazy sync' inside Neovim"
+                SYNC_TIMEOUT_STATUS=$?
+                echo "⚠  Plugin sync/build failed with exit code: $SYNC_TIMEOUT_STATUS" | tee -a "${PLUGIN_LOG}"
             fi
         else
             TIMEOUT_STATUS=$?
             if [ $TIMEOUT_STATUS -eq 124 ]; then
-                echo "⚠  Plugin installation timed out after 10 minutes" | tee -a "${PLUGIN_LOG}"
+                echo "⚠  Plugin installation timed out after 5 minutes" | tee -a "${PLUGIN_LOG}"
             else
                 echo "⚠  Plugin installation failed with exit code: $TIMEOUT_STATUS" | tee -a "${PLUGIN_LOG}"
             fi
