@@ -173,6 +173,28 @@ docker compose up -d --build
 - `~/.anthropic` - Claude tokens (on host)
 - `~/.opencode` - OpenCode config (on host)
 
+## Build Notes
+
+### ARM64 Compatibility
+- Dockerfile is optimized for ARM64 (Oracle Cloud ARM instances)
+- Uses Ubuntu 24.04 base image with ARM64 binaries
+- Neovim ARM64 binary downloaded from official releases
+- Python packages installed via uv (installed via pip3)
+
+### Docker Compose
+- Uses Docker Compose v2 syntax (no `version:` attribute)
+- If using older Docker Compose v1, add `version: '3.8'` at the top of `docker-compose.yml`
+
+### uv Installation
+- uv is installed via `pip3 install uv` for reliable PATH availability
+- Previous curl installer issues resolved
+
+### Building on x86_64
+To build ARM64 image on x86_64 host, use Docker Buildx:
+```bash
+docker buildx build --platform linux/arm64 -t my-ide .
+```
+
 ## Troubleshooting
 
 ### Common Issues

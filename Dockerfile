@@ -32,9 +32,8 @@ RUN wget https://github.com/neovim/neovim/releases/download/stable/nvim-linux-ar
     rm nvim-linux-arm64.tar.gz
 
 # 4. Install uv (modern Python package manager)
-# Installs to ~/.cargo/bin, will be added to PATH in entrypoint
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
-    ln -s /root/.cargo/bin/uv /usr/local/bin/uv
+# Install via pip for reliable availability in PATH
+RUN pip3 install uv
 
 # 5. Install Python LSP tools
 # pyright via npm (official Microsoft Python language server)
