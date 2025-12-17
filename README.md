@@ -186,9 +186,9 @@ docker compose up -d --build
 - If using older Docker Compose v1, add `version: '3.8'` at the top of `docker-compose.yml`
 
 ### uv Installation
-- uv is installed via pipx (Ubuntu 24.04 blocks system pip installs)
-- pipx ensures proper isolation while making uv available system-wide
-- Python externally-managed-environment restriction removed for container
+- uv is installed via `pip3 install uv --break-system-packages`
+- Ubuntu 24.04's externally-managed-environment restriction removed
+- uv available system-wide in `/usr/local/bin`
 
 ### Python Package Installation
 - Python LSP tools (ruff, debugpy, etc.) installed via `uv pip install --system --break-system-packages`
@@ -213,7 +213,7 @@ sudo chown -R $USER:$USER ./workspace ./config
 
 
 #### "externally-managed-environment" error when installing Python packages
-This occurs because Ubuntu 24.04 protects system Python. The Dockerfile removes the restriction file and uses pipx/uv with --break-system-packages. If you encounter this error elsewhere, ensure you're using the correct installation method.
+This occurs because Ubuntu 24.04 protects system Python. The Dockerfile removes the restriction file and uses `--break-system-packages` flag. If you encounter this error elsewhere, ensure you're using `--break-system-packages` with pip/uv.
 
 #### LSP servers not installing
 1. Enter container: `docker exec -it ide-devbox bash`

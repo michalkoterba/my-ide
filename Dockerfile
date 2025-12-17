@@ -35,11 +35,8 @@ RUN wget https://github.com/neovim/neovim/releases/download/stable/nvim-linux-ar
     rm nvim-linux-arm64.tar.gz
 
 # 4. Install uv (modern Python package manager)
-# Install pipx first, then uv via pipx (Ubuntu 24.04 requires this for system-wide Python apps)
-RUN apt-get update && apt-get install -y pipx && \
-    pipx ensurepath && \
-    pipx install --global uv && \
-    rm -rf /var/lib/apt/lists/*
+# Install uv directly via pip with --break-system-packages (EXTERNALLY-MANAGED removed)
+RUN pip3 install uv --break-system-packages
 
 # 5. Install Python LSP tools
 # pyright via npm (official Microsoft Python language server)
